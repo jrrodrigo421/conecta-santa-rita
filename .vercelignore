@@ -1,0 +1,16 @@
+node_modules
+.git
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+aws/
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.tmp
+*.temp
+dist/
+build/

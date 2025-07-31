@@ -57,3 +57,5 @@ ehthumbs.db
 # Build files
 build/
 dist/
+
+.vercel
