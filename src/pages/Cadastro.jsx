@@ -40,33 +40,6 @@ const Cadastro = () => {
     }))
   }
 
-  const createServiceAfterSignup = async (userId, serviceData) => {
-    try {
-      // Aguardar um pouco para garantir que o usuário foi criado
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      const { data, error } = await supabase.from('services').insert({
-        user_id: userId,
-        title: `${serviceData.category} - ${serviceData.name}`,
-        description: serviceData.description,
-        category: serviceData.category,
-        experience: serviceData.experience,
-        contact_phone: serviceData.phone,
-        contact_email: serviceData.email,
-        is_active: true,
-        user_active: false // Será atualizado quando o email for confirmado
-      })
-
-      if (error) {
-        console.error('Erro ao criar serviço:', error)
-      } else {
-        console.log('Serviço criado com sucesso:', data)
-      }
-    } catch (err) {
-      console.error('Erro na criação do serviço:', err)
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -89,7 +62,14 @@ const Cadastro = () => {
       const userData = {
         name: formData.name,
         phone: formData.phone,
-        is_provider: formData.isProvider
+        is_provider: formData.isProvider,
+        // Incluir dados do serviço nos metadados para criar depois da confirmação
+        ...(formData.isProvider && {
+          service_category: formData.category,
+          service_description: formData.description,
+          service_experience: formData.experience,
+          service_title: `${formData.category} - ${formData.name}`
+        })
       }
 
       const { data, error } = await signUp(formData.email, formData.password, userData)
@@ -97,21 +77,11 @@ const Cadastro = () => {
       if (error) {
         setError(error.message)
       } else {
-        // Se for prestador de serviço, criar registro na tabela services
-        if (formData.isProvider && data.user) {
-          // Criar serviço em background
-          createServiceAfterSignup(data.user.id, {
-            category: formData.category,
-            name: formData.name,
-            description: formData.description,
-            experience: formData.experience,
-            phone: formData.phone,
-            email: formData.email
-          })
-        }
+        // Não tentar criar o serviço aqui - será criado após confirmação do email
+        // ou através de um processo diferente
         
         const message = formData.isProvider 
-          ? 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta. Seu serviço será ativado após a confirmação.'
+          ? 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta. Após a confirmação, você poderá criar seus serviços.'
           : 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.'
         
         navigate('/login', { 

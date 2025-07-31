@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import Servicos from './pages/Servicos'
+import CriarServico from './pages/CriarServico'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/servicos" element={<Servicos />} />
+            <Route path="/criar-servico" element={<CriarServico />} />
           </Routes>
         </Layout>
       </Router>

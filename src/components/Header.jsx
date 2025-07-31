@@ -35,6 +35,18 @@ const Header = () => {
             
             {user ? (
               <div className="flex items-center space-x-4">
+                <Link 
+                  to="/servicos" 
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Serviços
+                </Link>
+                <Link 
+                  to="/criar-servico" 
+                  className="btn-primary"
+                >
+                  Criar Serviço
+                </Link>
                 <span className="text-gray-600">
                   Olá, {user.user_metadata?.name || user.email}
                 </span>
@@ -47,6 +59,12 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                <Link 
+                  to="/servicos" 
+                  className="text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  Serviços
+                </Link>
                 <Link 
                   to="/login" 
                   className="text-gray-600 hover:text-primary-600 transition-colors"
