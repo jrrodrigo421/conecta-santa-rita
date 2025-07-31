@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 
 const AuthCallback = () => {
@@ -7,7 +7,6 @@ const AuthCallback = () => {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     handleAuthCallback()
@@ -15,32 +14,96 @@ const AuthCallback = () => {
 
   const handleAuthCallback = async () => {
     try {
-      // Verificar se há parâmetros de erro na URL
-      const errorCode = searchParams.get('error_code')
-      const errorDescription = searchParams.get('error_description')
+      console.log('🔄 Iniciando processo de confirmação...')
+      console.log('URL atual:', window.location.href)
       
+      // Verificar se há hash na URL (formato antigo do Supabase)
+      const hash = window.location.hash
+      console.log('Hash encontrado:', hash)
+      
+      if (hash) {
+        // Processar hash parameters
+        const hashParams = new URLSearchParams(hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const errorCode = hashParams.get('error_code')
+        const errorDescription = hashParams.get('error_description')
+        
+        console.log('Parâmetros do hash:', {
+          accessToken: accessToken ? 'PRESENTE' : 'AUSENTE',
+          refreshToken: refreshToken ? 'PRESENTE' : 'AUSENTE',
+          errorCode,
+          errorDescription
+        })
+
+        if (errorCode) {
+          console.error('❌ Erro encontrado no hash:', errorCode, errorDescription)
+          setError(`Erro na confirmação: ${errorDescription || errorCode}`)
+          setLoading(false)
+          return
+        }
+
+        if (accessToken && refreshToken) {
+          console.log('✅ Tokens encontrados, definindo sessão...')
+          
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (error) {
+            console.error('❌ Erro ao definir sessão:', error)
+            setError('Erro ao confirmar email. Tente fazer login novamente.')
+          } else {
+            console.log('✅ Sessão definida com sucesso:', data)
+            setSuccess(true)
+            
+            // Limpar a URL
+            window.history.replaceState({}, document.title, '/auth/callback')
+            
+            // Redirecionar após 2 segundos
+            setTimeout(() => {
+              navigate('/login', { 
+                state: { 
+                  message: 'Email confirmado com sucesso! Você já pode fazer login.' 
+                }
+              })
+            }, 2000)
+          }
+          setLoading(false)
+          return
+        }
+      }
+
+      // Verificar query parameters (formato novo)
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get('code')
+      const errorCode = urlParams.get('error_code')
+      const errorDescription = urlParams.get('error_description')
+      
+      console.log('Parâmetros da query:', {
+        code: code ? 'PRESENTE' : 'AUSENTE',
+        errorCode,
+        errorDescription
+      })
+
       if (errorCode) {
+        console.error('❌ Erro encontrado na query:', errorCode, errorDescription)
         setError(`Erro na confirmação: ${errorDescription || errorCode}`)
         setLoading(false)
         return
       }
 
-      // Verificar se há tokens na URL (confirmação de email)
-      const accessToken = searchParams.get('access_token')
-      const refreshToken = searchParams.get('refresh_token')
-      
-      if (accessToken && refreshToken) {
-        // Definir a sessão com os tokens
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
-
+      if (code) {
+        console.log('✅ Código de autorização encontrado, trocando por sessão...')
+        
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        
         if (error) {
-          console.error('Erro ao definir sessão:', error)
+          console.error('❌ Erro ao trocar código por sessão:', error)
           setError('Erro ao confirmar email. Tente fazer login novamente.')
         } else {
-          console.log('Email confirmado com sucesso:', data)
+          console.log('✅ Código trocado com sucesso:', data)
           setSuccess(true)
           
           // Redirecionar após 2 segundos
@@ -52,21 +115,30 @@ const AuthCallback = () => {
             })
           }, 2000)
         }
-      } else {
-        // Verificar se o usuário já está logado
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          setSuccess(true)
-          setTimeout(() => {
-            navigate('/servicos')
-          }, 2000)
-        } else {
-          setError('Link de confirmação inválido ou expirado.')
-        }
+        setLoading(false)
+        return
       }
+
+      // Se chegou até aqui, verificar se já há uma sessão ativa
+      console.log('🔍 Verificando sessão existente...')
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) {
+        console.error('❌ Erro ao verificar usuário:', userError)
+        setError('Link de confirmação inválido ou expirado.')
+      } else if (user) {
+        console.log('✅ Usuário já logado:', user.email)
+        setSuccess(true)
+        setTimeout(() => {
+          navigate('/servicos')
+        }, 2000)
+      } else {
+        console.log('❌ Nenhum usuário encontrado')
+        setError('Link de confirmação inválido ou expirado.')
+      }
+      
     } catch (err) {
-      console.error('Erro no callback:', err)
+      console.error('❌ Erro inesperado no callback:', err)
       setError('Erro inesperado. Tente novamente.')
     } finally {
       setLoading(false)
@@ -79,6 +151,7 @@ const AuthCallback = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Confirmando seu email...</p>
+          <p className="mt-2 text-xs text-gray-500">Processando dados de autenticação</p>
         </div>
       </div>
     )
@@ -119,9 +192,14 @@ const AuthCallback = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Erro na Confirmação
           </h2>
-          <p className="text-red-600 mb-4">
+          <p className="text-red-600 mb-4 text-sm">
             {error}
           </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+            <p className="text-xs text-yellow-800">
+              <strong>Dica:</strong> Tente fazer login normalmente. Se o erro persistir, crie uma nova conta.
+            </p>
+          </div>
           <div className="space-y-2">
             <button
               onClick={() => navigate('/login')}

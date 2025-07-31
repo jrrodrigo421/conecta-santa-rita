@@ -4,11 +4,20 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
+// URL fixa para produção
+const getRedirectUrl = () => {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5173/auth/callback'
+  }
+  return 'https://conectasantarita-aws-q.vercel.app/auth/callback'
+}
+
 // Debug apenas em desenvolvimento
 if (import.meta.env.DEV) {
   console.log('🔧 Supabase Config:', {
     url: supabaseUrl ? 'SET' : 'NOT SET',
-    key: supabaseAnonKey ? 'SET' : 'NOT SET'
+    key: supabaseAnonKey ? 'SET' : 'NOT SET',
+    redirectUrl: getRedirectUrl()
   })
 }
 
@@ -20,16 +29,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Configuração do cliente Supabase com opções de auth
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // URL de redirecionamento para confirmação de email
-    redirectTo: import.meta.env.PROD 
-      ? 'https://conectasantarita-aws-4y8we03ih-jrrodrigo421s-projects.vercel.app/auth/callback'
-      : 'http://localhost:5173/auth/callback',
+    // URL de redirecionamento fixa
+    redirectTo: getRedirectUrl(),
     // Detectar sessão automaticamente
     detectSessionInUrl: true,
     // Persistir sessão no localStorage
     persistSession: true,
     // Auto refresh token
-    autoRefreshToken: true
+    autoRefreshToken: true,
+    // Configurações adicionais para resolver problemas de confirmação
+    flowType: 'pkce'
   }
 })
 
