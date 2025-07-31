@@ -1,60 +1,42 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Configuração das variáveis com fallbacks
+// 🚀 CONFIGURAÇÃO 100% PRODUÇÃO
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
-// URL fixa para produção
-const getRedirectUrl = () => {
-  if (import.meta.env.DEV) {
-    return 'https://conectasantarita-aws-q.vercel.app/auth/callback'
-  }
-  return 'https://conectasantarita-aws-q.vercel.app/auth/callback'
-}
+// 🔥 URL FIXA DE PRODUÇÃO - SEM CONDICIONAIS
+const PRODUCTION_REDIRECT_URL = 'https://conectasantarita-aws-q.vercel.app/auth/callback'
 
-// Debug apenas em desenvolvimento
-if (import.meta.env.DEV) {
-  console.log('🔧 Supabase Config:', {
-    url: supabaseUrl ? 'SET' : 'NOT SET',
-    key: supabaseAnonKey ? 'SET' : 'NOT SET',
-    redirectUrl: getRedirectUrl()
-  })
-}
-
-// Validação final
+// ✅ VALIDAÇÃO OBRIGATÓRIA
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Supabase configuration is missing. Please check your environment variables.')
+  throw new Error('❌ ERRO CRÍTICO: Variáveis do Supabase não configuradas!')
 }
 
-// Configuração do cliente Supabase com opções de auth
+console.log('🚀 CONECTA SANTA RITA - PRODUÇÃO ATIVA')
+console.log('🔗 Redirect URL:', PRODUCTION_REDIRECT_URL)
+
+// 🚀 CLIENTE SUPABASE PRODUÇÃO
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // URL de redirecionamento fixa
-    redirectTo: getRedirectUrl(),
-    // Detectar sessão automaticamente
+    redirectTo: PRODUCTION_REDIRECT_URL,
     detectSessionInUrl: true,
-    // Persistir sessão no localStorage
     persistSession: true,
-    // Auto refresh token
     autoRefreshToken: true,
-    // Configurações adicionais para resolver problemas de confirmação
     flowType: 'pkce'
   }
 })
 
-// Função para verificar se o usuário está autenticado
+// 🔥 FUNÇÕES DE PRODUÇÃO
 export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   return user
 }
 
-// Função para fazer logout
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut()
   return { error }
 }
 
-// Função para fazer login
 export const signIn = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -63,13 +45,13 @@ export const signIn = async (email, password) => {
   return { data, error }
 }
 
-// Função para fazer cadastro
 export const signUp = async (email, password, userData) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: userData
+      data: userData,
+      emailRedirectTo: PRODUCTION_REDIRECT_URL
     }
   })
   return { data, error }
