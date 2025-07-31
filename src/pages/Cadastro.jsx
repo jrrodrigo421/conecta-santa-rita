@@ -10,10 +10,7 @@ const Cadastro = () => {
     password: '',
     confirmPassword: '',
     phone: '',
-    isProvider: false,
-    category: '',
-    description: '',
-    experience: ''
+    isProvider: false
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -21,17 +18,6 @@ const Cadastro = () => {
   
   const { signUp } = useAuth()
   const navigate = useNavigate()
-
-  const categories = [
-    'Limpeza',
-    'Jardinagem',
-    'Elétrica',
-    'Encanamento',
-    'Pintura',
-    'Informática',
-    'Aulas Particulares',
-    'Outros'
-  ]
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -63,14 +49,7 @@ const Cadastro = () => {
       const userData = {
         name: formData.name,
         phone: formData.phone,
-        is_provider: formData.isProvider,
-        // Incluir dados do serviço nos metadados para criar depois da confirmação
-        ...(formData.isProvider && {
-          service_category: formData.category,
-          service_description: formData.description,
-          service_experience: formData.experience,
-          service_title: `${formData.category} - ${formData.name}`
-        })
+        is_provider: formData.isProvider
       }
 
       const { data, error } = await signUp(formData.email, formData.password, userData)
@@ -217,57 +196,23 @@ const Cadastro = () => {
               </div>
 
               {formData.isProvider && (
-                <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-900">Informações do Serviço</h3>
-                  
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                      Categoria do serviço
-                    </label>
-                    <select
-                      id="category"
-                      name="category"
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      value={formData.category}
-                      onChange={handleChange}
-                    >
-                      <option value="">Selecione uma categoria</option>
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                      Descrição do serviço
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      rows={3}
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      value={formData.description}
-                      onChange={handleChange}
-                      placeholder="Descreva o serviço que você oferece..."
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
-                      Experiência
-                    </label>
-                    <input
-                      id="experience"
-                      name="experience"
-                      type="text"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      value={formData.experience}
-                      onChange={handleChange}
-                      placeholder="Ex: 5 anos de experiência"
-                    />
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-blue-800">
+                        Prestador de Serviços
+                      </h3>
+                      <div className="mt-2 text-sm text-blue-700">
+                        <p>
+                          Após confirmar seu email, você poderá criar e gerenciar seus serviços na área "Criar Serviço".
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
