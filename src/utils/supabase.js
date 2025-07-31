@@ -17,7 +17,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase configuration is missing. Please check your environment variables.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Configuração do cliente Supabase com opções de auth
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // URL de redirecionamento para confirmação de email
+    redirectTo: import.meta.env.PROD 
+      ? 'https://conectasantarita-aws-4y8we03ih-jrrodrigo421s-projects.vercel.app/auth/callback'
+      : 'http://localhost:5173/auth/callback',
+    // Detectar sessão automaticamente
+    detectSessionInUrl: true,
+    // Persistir sessão no localStorage
+    persistSession: true,
+    // Auto refresh token
+    autoRefreshToken: true
+  }
+})
 
 // Função para verificar se o usuário está autenticado
 export const getCurrentUser = async () => {
