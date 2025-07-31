@@ -7,7 +7,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 // URL fixa para produção
 const getRedirectUrl = () => {
   if (import.meta.env.DEV) {
-    return 'http://localhost:5173/auth/callback'
+    return 'https://conectasantarita-aws-q.vercel.app/auth/callback'
   }
   return 'https://conectasantarita-aws-q.vercel.app/auth/callback'
 }
