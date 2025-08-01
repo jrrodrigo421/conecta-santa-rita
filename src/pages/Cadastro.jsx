@@ -44,6 +44,8 @@ const Cadastro = () => {
     }
 
     try {
+      console.log('🚀 Iniciando cadastro...')
+      
       const { data, error } = await signUp(
         formData.email,
         formData.password,
@@ -55,13 +57,20 @@ const Cadastro = () => {
       )
 
       if (error) {
-        if (error.message.includes('already registered')) {
+        console.error('❌ Erro no cadastro:', error)
+        
+        if (error.message?.includes('already registered')) {
           setError('Este email já está cadastrado')
+        } else if (error.message?.includes('Database error')) {
+          setError('Erro no banco de dados. Tente novamente em alguns segundos.')
+        } else if (error.message?.includes('unexpected_failure')) {
+          setError('Erro interno do servidor. Tente novamente.')
         } else {
-          setError('Erro ao criar conta: ' + error.message)
+          setError(`Erro ao criar conta: ${error.message}`)
         }
       } else if (data?.user) {
-        console.log('✅ Usuário criado:', data.user.email)
+        console.log('✅ Cadastro realizado com sucesso!')
+        
         // Redirecionar diretamente para serviços (usuário já está ativo)
         navigate('/servicos', {
           state: {
@@ -69,10 +78,12 @@ const Cadastro = () => {
             type: 'success'
           }
         })
+      } else {
+        setError('Erro inesperado. Nenhum usuário foi criado.')
       }
     } catch (err) {
-      console.error('Erro no cadastro:', err)
-      setError('Erro inesperado. Tente novamente.')
+      console.error('❌ Erro inesperado no cadastro:', err)
+      setError('Erro inesperado. Tente novamente em alguns segundos.')
     } finally {
       setLoading(false)
     }

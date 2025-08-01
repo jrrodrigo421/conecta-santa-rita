@@ -46,21 +46,67 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signUp = async (email, password, userData) => {
-    console.log('📝 Cadastrando usuário:', email)
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: userData,
-        emailRedirectTo: undefined // Remove confirmação de email
+    console.log('📝 Iniciando cadastro:', email, userData)
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData,
+          emailRedirectTo: undefined // Remove confirmação de email
+        }
+      })
+      
+      if (error) {
+        console.error('❌ Erro no signUp:', error)
+        return { data: null, error }
       }
-    })
-    
-    if (data?.user && !error) {
-      console.log('✅ Usuário criado com sucesso:', data.user.email)
+      
+      if (data?.user) {
+        console.log('✅ Usuário criado:', data.user.email)
+        console.log('📋 Dados do usuário:', data.user)
+        
+        // Aguardar um pouco para o trigger criar o profile
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Verificar se o profile foi criado
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+        
+        if (profileError) {
+          console.warn('⚠️ Profile não encontrado, tentando criar manualmente:', profileError)
+          
+          // Tentar criar profile manualmente
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              name: userData.name,
+              phone: userData.phone,
+              is_provider: userData.is_provider
+            })
+          
+          if (insertError) {
+            console.error('❌ Erro ao criar profile manualmente:', insertError)
+            return { data: null, error: { message: 'Erro ao criar perfil do usuário' } }
+          }
+          
+          console.log('✅ Profile criado manualmente')
+        } else {
+          console.log('✅ Profile encontrado:', profile)
+        }
+      }
+      
+      return { data, error: null }
+      
+    } catch (err) {
+      console.error('❌ Erro inesperado no signUp:', err)
+      return { data: null, error: { message: 'Erro inesperado ao criar conta' } }
     }
-    
-    return { data, error }
   }
 
   const signOut = async () => {
