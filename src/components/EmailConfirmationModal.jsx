@@ -41,7 +41,7 @@ const EmailConfirmationModal = ({ isOpen, onClose, email, isProvider }) => {
             <p className="font-semibold text-primary-600 bg-primary-50 px-3 py-2 rounded-lg">
               {email}
             </p>
-            
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
               <h4 className="font-semibold text-blue-900 mb-2">📧 Próximos passos:</h4>
               <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
@@ -63,7 +63,7 @@ const EmailConfirmationModal = ({ isOpen, onClose, email, isProvider }) => {
             )}
 
             <p className="text-xs text-gray-500">
-              Não recebeu o email? Verifique a pasta de spam ou lixo eletrônico.
+              Não recebeu o email? Verifique a pasta de spam ou lixo eletrônico.📤
             </p>
           </div>
 
