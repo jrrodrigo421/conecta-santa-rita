@@ -19,7 +19,7 @@ Uma plataforma moderna para conectar pessoas que precisam de serviços locais co
 - 🔍 **Busca Inteligente**: Filtros por categoria e termo de busca
 - 📱 **Design Responsivo**: Interface adaptada para todos os dispositivos
 - 🛡️ **Proteção de Dados**: Informações de contato visíveis apenas para usuários logados
-- ✅ **Status de Verificação**: Indicador visual para usuários com email confirmado
+- ⚡ **Cadastro Instantâneo**: Usuários ficam ativos imediatamente após o cadastro
 
 ## 🛠️ Stack Tecnológica
 
@@ -68,19 +68,10 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anonima
 Execute o script SQL no editor do Supabase:
 ```bash
 # Execute o arquivo supabase-setup.sql no painel do Supabase
-# Depois execute migration-user-active.sql para as melhorias mais recentes
+# Execute disable-email-confirmation.sql para desabilitar confirmação de email
 ```
 
-### 5. Configure o sistema de email
-**IMPORTANTE:** Configure as URLs de email no Supabase:
-```bash
-# Siga as instruções em CONFIGURAR-EMAIL.md
-# URLs necessárias:
-# Site URL: https://conectasantarita-aws-q.vercel.app
-# Redirect URL: https://conectasantarita-aws-q.vercel.app/auth/callback
-```
-
-### 6. Execute o projeto
+### 5. Execute o projeto
 ```bash
 npm run dev
 ```
@@ -155,15 +146,18 @@ src/
 ### Para Prestadores:
 1. ✍️ Cadastre-se marcando "Quero oferecer serviços"
 2. 📝 Preencha as informações do seu serviço
-3. ✅ Confirme seu email para ativar o serviço
-4. 👀 Seu serviço aparecerá na listagem para clientes
+3. ✅ Seu serviço fica ativo imediatamente
+4. 👀 Seu serviço aparece na listagem para clientes
 
 ## 🚀 Deploy
 
-### Frontend (Vercel)
+### Frontend (Vercel - Auto Deploy)
+O projeto está conectado ao GitHub e faz deploy automático:
 ```bash
-npm run build
-# Deploy da pasta dist/ no Vercel
+# Apenas faça push para o repositório
+git add .
+git commit -m "feat: suas mudanças"
+git push origin main
 ```
 
 ### Backend

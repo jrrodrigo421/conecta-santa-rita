@@ -6,7 +6,6 @@ import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import Servicos from './pages/Servicos'
 import CriarServico from './pages/CriarServico'
-import AuthCallback from './pages/AuthCallback'
 
 function App() {
   return (
@@ -19,7 +18,6 @@ function App() {
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/servicos" element={<Servicos />} />
             <Route path="/criar-servico" element={<CriarServico />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
         </Layout>
       </Router>

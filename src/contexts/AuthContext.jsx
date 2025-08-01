@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth event:', event, session?.user?.email)
         setUser(session?.user ?? null)
         setLoading(false)
       }
@@ -45,13 +46,20 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signUp = async (email, password, userData) => {
+    console.log('📝 Cadastrando usuário:', email)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData
+        data: userData,
+        emailRedirectTo: undefined // Remove confirmação de email
       }
     })
+    
+    if (data?.user && !error) {
+      console.log('✅ Usuário criado com sucesso:', data.user.email)
+    }
+    
     return { data, error }
   }
 

@@ -4,15 +4,11 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
-// 🔗 URL DE PRODUÇÃO FIXA
-const REDIRECT_URL = 'https://conectasantarita-aws-q.vercel.app/auth/callback'
+console.log('🔗 Supabase configurado - SEM confirmação de email')
 
-console.log('🔗 Redirect URL configurada:', REDIRECT_URL)
-
-// CLIENTE SUPABASE
+// CLIENTE SUPABASE - SEM CONFIRMAÇÃO DE EMAIL
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    redirectTo: REDIRECT_URL,
     detectSessionInUrl: true,
     persistSession: true,
     autoRefreshToken: true,
@@ -44,7 +40,7 @@ export const signUp = async (email, password, userData) => {
     password,
     options: {
       data: userData,
-      emailRedirectTo: REDIRECT_URL
+      emailRedirectTo: undefined // Remove redirect de email
     }
   })
   return { data, error }

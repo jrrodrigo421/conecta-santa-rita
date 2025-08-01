@@ -27,10 +27,21 @@ const Servicos = () => {
 
   const fetchServices = async () => {
     try {
+      console.log('🔍 Buscando serviços...')
+      
       const { data, error } = await supabase
         .from('services')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          category,
+          experience,
+          contact_phone,
+          contact_email,
+          is_active,
+          created_at,
+          user_id,
           profiles!services_user_id_fkey (
             name,
             phone
@@ -39,23 +50,29 @@ const Servicos = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Erro na query:', error)
+        throw error
+      }
+
+      console.log('✅ Serviços encontrados:', data?.length || 0)
       setServices(data || [])
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error)
+      console.error('❌ Erro ao buscar serviços:', error)
+      setServices([]) // Garantir que services seja um array
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredServices = Array.isArray(services) ? services.filter(service => {
+    const matchesSearch = service.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === '' || selectedCategory === 'Todos' ||
       service.category === selectedCategory
     
     return matchesSearch && matchesCategory
-  })
+  }) : []
 
   if (loading) {
     return (
@@ -146,13 +163,11 @@ const Servicos = () => {
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                       {service.category}
                     </span>
-                    {service.user_active && (
-                      <span className="inline-flex items-center text-green-600">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </span>
-                    )}
+                    <span className="inline-flex items-center text-green-600">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </span>
                   </div>
 
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">

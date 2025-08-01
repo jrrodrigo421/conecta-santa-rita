@@ -32,11 +32,7 @@ const Login = () => {
       const { error } = await signIn(email, password)
       
       if (error) {
-        if (error.message.includes('email_not_confirmed')) {
-          setError('Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação.')
-        } else {
-          setError('Email ou senha incorretos')
-        }
+        setError('Email ou senha incorretos')
       } else {
         navigate('/servicos')
       }
