@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
-// URL FUNCIONAL ATUAL
-const REDIRECT_URL = 'https://conectasantarita-aws-qwgf4ucvf-jrrodrigo421s-projects.vercel.app/auth/callback'
+// 🔗 URL DE PRODUÇÃO FIXA
+const REDIRECT_URL = 'https://conectasantarita-aws-q.vercel.app/auth/callback'
 
 console.log('🔗 Redirect URL configurada:', REDIRECT_URL)
 

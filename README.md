@@ -71,7 +71,16 @@ Execute o script SQL no editor do Supabase:
 # Depois execute migration-user-active.sql para as melhorias mais recentes
 ```
 
-### 5. Execute o projeto
+### 5. Configure o sistema de email
+**IMPORTANTE:** Configure as URLs de email no Supabase:
+```bash
+# Siga as instruções em CONFIGURAR-EMAIL.md
+# URLs necessárias:
+# Site URL: https://conectasantarita-aws-q.vercel.app
+# Redirect URL: https://conectasantarita-aws-q.vercel.app/auth/callback
+```
+
+### 6. Execute o projeto
 ```bash
 npm run dev
 ```
@@ -151,10 +160,10 @@ src/
 
 ## 🚀 Deploy
 
-### Frontend (Vercel/Netlify)
+### Frontend (Vercel)
 ```bash
 npm run build
-# Deploy da pasta dist/
+# Deploy da pasta dist/ no Vercel
 ```
 
 ### Backend
