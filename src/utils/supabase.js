@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
-// 🔥 URL DIRETA DE PRODUÇÃO (sem SSO)
-const PRODUCTION_REDIRECT_URL = 'https://conectasantarita-aws-f27h9ddap-jrrodrigo421s-projects.vercel.app/auth/callback'
+// 🔥 URL FUNCIONAL SEM SSO
+const PRODUCTION_REDIRECT_URL = 'https://conectasantarita-aws-ecghus8h7-jrrodrigo421s-projects.vercel.app/auth/callback'
 
 // ✅ VALIDAÇÃO OBRIGATÓRIA
 if (!supabaseUrl || !supabaseAnonKey) {

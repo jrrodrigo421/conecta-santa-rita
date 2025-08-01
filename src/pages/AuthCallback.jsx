@@ -26,10 +26,14 @@ const AuthCallback = () => {
       const queryError = urlParams.get('error')
       const queryErrorCode = urlParams.get('error_code')
       const queryErrorDescription = urlParams.get('error_description')
+      const token = urlParams.get('token')
+      const type = urlParams.get('type')
       
       debug += `Query Error: ${queryError}\n`
       debug += `Query Error Code: ${queryErrorCode}\n`
       debug += `Query Error Description: ${queryErrorDescription}\n`
+      debug += `Token: ${token ? 'PRESENTE' : 'AUSENTE'}\n`
+      debug += `Type: ${type}\n`
       
       // Verificar hash parameters
       const hash = window.location.hash
@@ -49,7 +53,16 @@ const AuthCallback = () => {
       setDebugInfo(debug)
       console.log('🔍 DEBUG INFO:', debug)
 
-      // Se há erro nos parâmetros, mostrar erro
+      // Se há erro "Error confirming user", mostrar mensagem específica
+      if ((queryError && queryError.includes('server_error')) || 
+          (hashError && hashError.includes('server_error'))) {
+        console.error('❌ ERRO DE CONFIRMAÇÃO DETECTADO')
+        setError('Erro na confirmação do email. Isso pode acontecer se o link já foi usado ou expirou.')
+        setLoading(false)
+        return
+      }
+
+      // Se há outros erros, mostrar erro genérico
       if (queryError || hashError) {
         const errorMsg = queryErrorDescription || hashErrorDescription || queryError || hashError
         console.error('❌ ERRO ENCONTRADO:', errorMsg)
@@ -84,10 +97,38 @@ const AuthCallback = () => {
         return
       }
 
-      // Método 2: Verificar se há código de autorização
+      // Método 2: Se há token direto (formato antigo)
+      if (token && type === 'signup') {
+        console.log('✅ Método 2: Usando token direto')
+        
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'signup'
+          })
+          
+          if (error) {
+            console.error('❌ Erro ao verificar token:', error)
+            setError(`Erro ao confirmar: ${error.message}`)
+          } else {
+            console.log('✅ Token verificado com sucesso')
+            setSuccess(true)
+            setTimeout(() => navigate('/login', { 
+              state: { message: 'Email confirmado com sucesso!' }
+            }), 2000)
+          }
+        } catch (err) {
+          console.error('❌ Erro na verificação:', err)
+          setError('Erro ao processar confirmação. Tente fazer login normalmente.')
+        }
+        setLoading(false)
+        return
+      }
+
+      // Método 3: Verificar código de autorização
       const code = urlParams.get('code')
       if (code) {
-        console.log('✅ Método 2: Usando código de autorização')
+        console.log('✅ Método 3: Usando código de autorização')
         
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
         
@@ -105,51 +146,25 @@ const AuthCallback = () => {
         return
       }
 
-      // Método 3: Verificar token_hash (método mais comum)
-      const tokenHash = urlParams.get('token_hash')
-      const type = urlParams.get('type')
-      
-      if (tokenHash && type === 'email') {
-        console.log('✅ Método 3: Usando token_hash')
-        
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: 'email'
-        })
-        
-        if (error) {
-          console.error('❌ Erro ao verificar OTP:', error)
-          setError(`Erro ao confirmar: ${error.message}`)
-        } else {
-          console.log('✅ OTP verificado com sucesso')
-          setSuccess(true)
-          setTimeout(() => navigate('/login', { 
-            state: { message: 'Email confirmado com sucesso!' }
-          }), 2000)
-        }
-        setLoading(false)
-        return
-      }
-
       // Método 4: Verificar se já há sessão ativa
       console.log('🔍 Método 4: Verificando sessão existente')
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError) {
         console.error('❌ Erro ao verificar usuário:', userError)
-        setError('Link de confirmação inválido ou expirado.')
+        setError('Link de confirmação pode ter expirado. Tente fazer login normalmente.')
       } else if (user) {
         console.log('✅ Usuário já logado:', user.email)
         setSuccess(true)
         setTimeout(() => navigate('/servicos'), 2000)
       } else {
         console.log('❌ Nenhum método funcionou')
-        setError('Link de confirmação inválido, expirado ou já utilizado.')
+        setError('Link de confirmação inválido ou expirado. Tente fazer login - talvez seu email já esteja confirmado.')
       }
       
     } catch (err) {
       console.error('❌ Erro inesperado:', err)
-      setError('Erro inesperado. Tente novamente.')
+      setError('Erro inesperado. Tente fazer login normalmente.')
     } finally {
       setLoading(false)
     }
@@ -194,36 +209,36 @@ const AuthCallback = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-2xl mx-auto p-6">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Erro na Confirmação
+            Problema na Confirmação
           </h2>
-          <p className="text-red-600 mb-4 text-sm">
+          <p className="text-yellow-700 mb-4 text-sm">
             {error}
           </p>
           
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold text-blue-900 mb-2">💡 Soluções:</h3>
+            <div className="text-sm text-blue-800 text-left space-y-1">
+              <p>1. <strong>Tente fazer login normalmente</strong> - seu email pode já estar confirmado</p>
+              <p>2. <strong>Verifique se usou o link mais recente</strong> do email</p>
+              <p>3. <strong>Se persistir, crie uma nova conta</strong> com outro email</p>
+            </div>
+          </div>
+
           {/* Debug Info */}
           <details className="mb-4 text-left">
             <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
-              🔍 Informações de Debug (clique para expandir)
+              🔍 Informações Técnicas (clique para expandir)
             </summary>
             <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
               {debugInfo}
             </pre>
           </details>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-            <p className="text-xs text-yellow-800">
-              <strong>Possíveis soluções:</strong><br/>
-              1. Verifique se clicou no link mais recente do email<br/>
-              2. Tente fazer login normalmente - talvez já esteja confirmado<br/>
-              3. Se persistir, crie uma nova conta
-            </p>
-          </div>
           
           <div className="space-y-2">
             <button
