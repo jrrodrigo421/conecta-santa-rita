@@ -1,24 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
-// 🚀 CONFIGURAÇÃO 100% PRODUÇÃO
+// 🚀 CONFIGURAÇÃO PRODUÇÃO
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://heyzkjilmszhhvgocwjz.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhleXpramlsbXN6aGh2Z29jd2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODg2OTIsImV4cCI6MjA2OTU2NDY5Mn0.TeWlKh7qtgp-_OBUTBtwyRgVRLMUGk_0Ogx0iPRFzSU'
 
-// 🔥 URL FUNCIONAL SEM SSO
-const PRODUCTION_REDIRECT_URL = 'https://conectasantarita-aws-ecghus8h7-jrrodrigo421s-projects.vercel.app/auth/callback'
+// URL FUNCIONAL ATUAL
+const REDIRECT_URL = 'https://conectasantarita-aws-qwgf4ucvf-jrrodrigo421s-projects.vercel.app/auth/callback'
 
-// ✅ VALIDAÇÃO OBRIGATÓRIA
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('❌ ERRO CRÍTICO: Variáveis do Supabase não configuradas!')
-}
+console.log('🔗 Redirect URL configurada:', REDIRECT_URL)
 
-console.log('🚀 CONECTA SANTA RITA - PRODUÇÃO ATIVA')
-console.log('🔗 Redirect URL:', PRODUCTION_REDIRECT_URL)
-
-// 🚀 CLIENTE SUPABASE PRODUÇÃO
+// CLIENTE SUPABASE
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    redirectTo: PRODUCTION_REDIRECT_URL,
+    redirectTo: REDIRECT_URL,
     detectSessionInUrl: true,
     persistSession: true,
     autoRefreshToken: true,
@@ -26,7 +20,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// 🔥 FUNÇÕES DE PRODUÇÃO
 export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   return user
@@ -51,7 +44,7 @@ export const signUp = async (email, password, userData) => {
     password,
     options: {
       data: userData,
-      emailRedirectTo: PRODUCTION_REDIRECT_URL
+      emailRedirectTo: REDIRECT_URL
     }
   })
   return { data, error }
