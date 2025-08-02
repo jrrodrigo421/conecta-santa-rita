@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { getAllServices, searchServices, getServicesByCategory } from '../services/services'
+import { api } from '../services/api'
 
 const Servicos = () => {
   const [services, setServices] = useState([])
@@ -28,7 +28,7 @@ const Servicos = () => {
   const fetchServices = async () => {
     try {
       console.log('🔍 Buscando serviços...')
-      const data = await getAllServices()
+      const data = await api.getAllServices()
       console.log('✅ Serviços encontrados:', data.length)
       setServices(data)
     } catch (error) {
@@ -50,11 +50,11 @@ const Servicos = () => {
       let data = []
 
       if (searchTerm.trim()) {
-        data = await searchServices(searchTerm)
+        data = await api.searchServices(searchTerm)
       } else if (selectedCategory && selectedCategory !== 'Todos') {
-        data = await getServicesByCategory(selectedCategory)
+        data = await api.getServicesByCategory(selectedCategory)
       } else {
-        data = await getAllServices()
+        data = await api.getAllServices()
       }
 
       setServices(data)

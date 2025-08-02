@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { registerUser, loginUser, verifyToken, getUserById } from '../services/auth'
+import { api } from '../services/api'
 
 const AuthContext = createContext({})
 
@@ -14,7 +14,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [token, setToken] = useState(localStorage.getItem('token'))
+  const [token, setToken] = useState(localStorage.getItem('conecta_token'))
 
   useEffect(() => {
     checkAuth()
@@ -22,36 +22,27 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const savedToken = localStorage.getItem('token')
+      const savedToken = localStorage.getItem('conecta_token')
       
       if (!savedToken) {
         setLoading(false)
         return
       }
 
-      const decoded = verifyToken(savedToken)
-      
-      if (!decoded) {
-        localStorage.removeItem('token')
-        setToken(null)
-        setLoading(false)
-        return
-      }
-
-      // Buscar dados atualizados do usuário
-      const userData = await getUserById(decoded.id)
+      // Verificar se o token é válido
+      const userData = await api.getCurrentUser(savedToken)
       
       if (userData) {
         setUser(userData)
         setToken(savedToken)
       } else {
-        localStorage.removeItem('token')
+        localStorage.removeItem('conecta_token')
         setToken(null)
       }
       
     } catch (error) {
       console.error('Erro na verificação de auth:', error)
-      localStorage.removeItem('token')
+      localStorage.removeItem('conecta_token')
       setToken(null)
     } finally {
       setLoading(false)
@@ -62,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('📝 Iniciando cadastro:', email)
       
-      const result = await registerUser({
+      const result = await api.register({
         name: userData.name,
         email,
         phone: userData.phone,
@@ -73,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       console.log('✅ Usuário cadastrado:', result.user.email)
       
       // Salvar token e usuário
-      localStorage.setItem('token', result.token)
+      localStorage.setItem('conecta_token', result.token)
       setToken(result.token)
       setUser(result.user)
       
@@ -89,12 +80,12 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('🔑 Fazendo login:', email)
       
-      const result = await loginUser(email, password)
+      const result = await api.login(email, password)
       
       console.log('✅ Login realizado:', result.user.email)
       
       // Salvar token e usuário
-      localStorage.setItem('token', result.token)
+      localStorage.setItem('conecta_token', result.token)
       setToken(result.token)
       setUser(result.user)
       
@@ -108,7 +99,7 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
-      localStorage.removeItem('token')
+      localStorage.removeItem('conecta_token')
       setToken(null)
       setUser(null)
       

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { createService } from '../services/services'
+import { api } from '../services/api'
 
 const CriarServico = () => {
   const [formData, setFormData] = useState({
@@ -51,7 +51,7 @@ const CriarServico = () => {
     try {
       console.log('📝 Criando serviço:', formData)
       
-      await createService(formData, user.id)
+      await api.createService(formData, user.id)
       
       console.log('✅ Serviço criado com sucesso')
       
