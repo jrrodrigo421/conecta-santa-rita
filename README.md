@@ -12,21 +12,6 @@
     </p>
   </div>
 
-  <!-- Animação CSS -->
-  <style>
-    @keyframes glow {
-      from { box-shadow: 0 8px 32px rgba(255, 149, 0, 0.3); }
-      to { box-shadow: 0 12px 40px rgba(255, 149, 0, 0.6); }
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-    .aws-badge {
-      animation: float 3s ease-in-out infinite;
-    }
-  </style>
-
   <!-- Badges Tecnológicos -->
   <div class="aws-badge" style="margin: 30px 0;">
     <img src="https://img.shields.io/badge/AWS_Q_Developer-FF9500?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS Q Developer">
