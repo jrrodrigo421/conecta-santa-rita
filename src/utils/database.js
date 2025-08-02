@@ -3,7 +3,7 @@ import { Pool } from 'pg'
 
 // Configuração do banco Neon
 const pool = new Pool({
-  connectionString: import.meta.env.VITE_DATABASE_URL,
+  connectionString: import.meta.env.VITE_DATABASE_URL || 'postgresql://neondb_owner:npg_EG6dMYLIOt9f@ep-rough-violet-aelyozwg-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
   ssl: {
     rejectUnauthorized: false
   }
