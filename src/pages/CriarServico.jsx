@@ -1,20 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../utils/supabase'
+import { createService } from '../services/services'
 
 const CriarServico = () => {
   const [formData, setFormData] = useState({
     title: '',
-    category: '',
     description: '',
+    category: '',
     experience: '',
     contact_phone: '',
     contact_email: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -42,65 +41,65 @@ const CriarServico = () => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess('')
 
     if (!user) {
-      setError('Você precisa estar logado para criar um serviço.')
+      setError('Você precisa estar logado para criar um serviço')
       setLoading(false)
       return
     }
 
     try {
-      // Verificar se o usuário tem email confirmado
-      const userActive = user.email_confirmed_at !== null
-
-      const { data, error } = await supabase
-        .from('services')
-        .insert({
-          user_id: user.id,
-          title: formData.title,
-          description: formData.description,
-          category: formData.category,
-          experience: formData.experience,
-          contact_phone: formData.contact_phone,
-          contact_email: formData.contact_email,
-          is_active: true,
-          user_active: userActive
-        })
-        .select()
-
-      if (error) {
-        console.error('Erro ao criar serviço:', error)
-        setError('Erro ao criar serviço: ' + error.message)
-      } else {
-        setSuccess('Serviço criado com sucesso!')
-        setTimeout(() => {
-          navigate('/servicos')
-        }, 2000)
-      }
+      console.log('📝 Criando serviço:', formData)
+      
+      await createService(formData, user.id)
+      
+      console.log('✅ Serviço criado com sucesso')
+      
+      navigate('/servicos', {
+        state: {
+          message: 'Serviço criado com sucesso!',
+          type: 'success'
+        }
+      })
+      
     } catch (err) {
-      console.error('Erro:', err)
-      setError('Erro inesperado ao criar serviço.')
+      console.error('❌ Erro ao criar serviço:', err)
+      setError('Erro ao criar serviço: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  // Redirecionar se não estiver logado
   if (!user) {
-    navigate('/login')
-    return null
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Acesso Restrito
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Você precisa estar logado para criar um serviço.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="btn-primary"
+          >
+            Fazer Login
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
             Criar Novo Serviço
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Cadastre seu serviço para que clientes possam encontrá-lo
+          </h1>
+          <p className="text-gray-600">
+            Cadastre seu serviço e conecte-se com clientes em Santa Rita do Sapucaí
           </p>
         </div>
 
@@ -112,15 +111,9 @@ const CriarServico = () => {
               </div>
             )}
 
-            {success && (
-              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg">
-                {success}
-              </div>
-            )}
-
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Título do Serviço
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                Título do Serviço *
               </label>
               <input
                 id="title"
@@ -128,15 +121,15 @@ const CriarServico = () => {
                 type="text"
                 required
                 className="input-field"
+                placeholder="Ex: Limpeza Residencial Completa"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Ex: Limpeza Residencial Completa"
               />
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                Categoria
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                Categoria *
               </label>
               <select
                 id="category"
@@ -148,14 +141,16 @@ const CriarServico = () => {
               >
                 <option value="">Selecione uma categoria</option>
                 {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Descrição do Serviço
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                Descrição do Serviço *
               </label>
               <textarea
                 id="description"
@@ -163,72 +158,66 @@ const CriarServico = () => {
                 rows={4}
                 required
                 className="input-field"
+                placeholder="Descreva detalhadamente o que você oferece..."
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Descreva detalhadamente o serviço que você oferece..."
               />
             </div>
 
             <div>
-              <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-2">
                 Experiência
               </label>
-              <input
+              <textarea
                 id="experience"
                 name="experience"
-                type="text"
+                rows={3}
                 className="input-field"
+                placeholder="Conte sobre sua experiência, certificações, tempo de atuação..."
                 value={formData.experience}
                 onChange={handleChange}
-                placeholder="Ex: 5 anos de experiência"
               />
             </div>
 
-            <div>
-              <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700">
-                Telefone de Contato
-              </label>
-              <input
-                id="contact_phone"
-                name="contact_phone"
-                type="tel"
-                required
-                className="input-field"
-                value={formData.contact_phone}
-                onChange={handleChange}
-                placeholder="(35) 99999-9999"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700">
-                Email de Contato
-              </label>
-              <input
-                id="contact_email"
-                name="contact_email"
-                type="email"
-                required
-                className="input-field"
-                value={formData.contact_email}
-                onChange={handleChange}
-                placeholder="seu@email.com"
-              />
-            </div>
-
-            {!user.email_confirmed_at && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
-                <p className="text-sm">
-                  ⚠️ Seu email ainda não foi confirmado. O serviço será criado, mas só ficará visível após a confirmação do email.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Telefone de Contato *
+                </label>
+                <input
+                  id="contact_phone"
+                  name="contact_phone"
+                  type="tel"
+                  required
+                  className="input-field"
+                  placeholder="(35) 99999-9999"
+                  value={formData.contact_phone}
+                  onChange={handleChange}
+                />
               </div>
-            )}
+
+              <div>
+                <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email de Contato *
+                </label>
+                <input
+                  id="contact_email"
+                  name="contact_email"
+                  type="email"
+                  required
+                  className="input-field"
+                  placeholder="seu@email.com"
+                  value={formData.contact_email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
 
             <div className="flex gap-4">
               <button
                 type="button"
                 onClick={() => navigate('/servicos')}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+                className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
                 Cancelar
               </button>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../utils/supabase'
+import { getAllServices, searchServices, getServicesByCategory } from '../services/services'
 
 const Servicos = () => {
   const [services, setServices] = useState([])
@@ -28,51 +28,51 @@ const Servicos = () => {
   const fetchServices = async () => {
     try {
       console.log('🔍 Buscando serviços...')
-      
-      const { data, error } = await supabase
-        .from('services')
-        .select(`
-          id,
-          title,
-          description,
-          category,
-          experience,
-          contact_phone,
-          contact_email,
-          is_active,
-          created_at,
-          user_id,
-          profiles!services_user_id_fkey (
-            name,
-            phone
-          )
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('❌ Erro na query:', error)
-        throw error
-      }
-
-      console.log('✅ Serviços encontrados:', data?.length || 0)
-      setServices(data || [])
+      const data = await getAllServices()
+      console.log('✅ Serviços encontrados:', data.length)
+      setServices(data)
     } catch (error) {
       console.error('❌ Erro ao buscar serviços:', error)
-      setServices([]) // Garantir que services seja um array
+      setServices([])
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredServices = Array.isArray(services) ? services.filter(service => {
-    const matchesSearch = service.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === '' || selectedCategory === 'Todos' ||
-      service.category === selectedCategory
-    
-    return matchesSearch && matchesCategory
-  }) : []
+  const handleSearch = async () => {
+    if (!searchTerm.trim() && !selectedCategory) {
+      fetchServices()
+      return
+    }
+
+    try {
+      setLoading(true)
+      let data = []
+
+      if (searchTerm.trim()) {
+        data = await searchServices(searchTerm)
+      } else if (selectedCategory && selectedCategory !== 'Todos') {
+        data = await getServicesByCategory(selectedCategory)
+      } else {
+        data = await getAllServices()
+      }
+
+      setServices(data)
+    } catch (error) {
+      console.error('❌ Erro na busca:', error)
+      setServices([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSearch()
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, selectedCategory])
 
   if (loading) {
     return (
@@ -138,12 +138,12 @@ const Servicos = () => {
 
           {/* Resultados */}
           <div className="mt-4 text-sm text-gray-600">
-            {filteredServices.length} serviço{filteredServices.length !== 1 ? 's' : ''} encontrado{filteredServices.length !== 1 ? 's' : ''}
+            {services.length} serviço{services.length !== 1 ? 's' : ''} encontrado{services.length !== 1 ? 's' : ''}
           </div>
         </div>
 
         {/* Lista de Serviços */}
-        {filteredServices.length === 0 ? (
+        {services.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +155,7 @@ const Servicos = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredServices.map((service) => (
+            {services.map((service) => (
               <div key={service.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                 {/* Header do Card */}
                 <div className="p-4 sm:p-6">
@@ -189,7 +189,7 @@ const Servicos = () => {
                     {user ? (
                       <div className="space-y-2">
                         <p className="text-sm">
-                          <strong>Prestador:</strong> {service.profiles?.name || 'Nome não disponível'}
+                          <strong>Prestador:</strong> {service.provider_name}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <a
@@ -212,7 +212,7 @@ const Servicos = () => {
                           <strong>Faça login para ver os contatos</strong>
                         </p>
                         <p className="text-yellow-600 text-xs">
-                          Prestador: {service.profiles?.name || 'Nome disponível após login'}
+                          Prestador: {service.provider_name}
                         </p>
                       </div>
                     )}
